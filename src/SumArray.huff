@@ -11,6 +11,35 @@
 #define function sumArray(uint256[]) payable returns(uint256)
 
 
-#define macro MAIN() = takes(0) returns(0) {
+#define macro SUM_ARRAY() = takes(0) returns(0) {
+    //https://github.com/AmadiMichael/Huff-Console
+    0x04 calldataload 0x04 add //[array_length] //why do I have to add 4 to the length to get the offset?
+    dup1 calldataload //[length, offset]
+    0x00 // [sum, length, offset]
+    0x00 // [index, sum, length, offset]
 
+    loop:
+    dup1 dup4 eq ret jumpi   // [index, sum length, offset]  if length == index -> return
+    0x01 add                 // [index+1, sum, length, offset]
+    dup1 0x20 mul            // [index*32 gets you the element, index+1, sum, length, offset]   //UNDERSTAND WHAT IS THIS FACTOR
+    dup5 add calldataload    // [index*32 gets you the element, index+1, sum, length, offset]
+    dup3 add swap2 pop // [index+1, new_sum, length, offset]
+    loop jump
+
+    ret:
+    swap1  0x00 mstore  // [index, length, offset] store sum in memory at offset 0
+    0x20 0x00 return
+    //return sum
+}
+
+
+#define macro MAIN() = takes(0) returns(0) {
+    0x00 calldataload 0xe0 shr 
+
+    dup1 __FUNC_SIG(sumArray) eq sumArray jumpi
+
+    0x00 0x00 revert
+
+    sumArray:
+        SUM_ARRAY()
 }

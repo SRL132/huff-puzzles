@@ -9,5 +9,14 @@
 
 
  #define macro MAIN() = takes(0) returns(0) {
-    
+    0x00 calldataload //[calldata]
+    0x00 mstore        
+    calldatasize    //[calldata, calldatasize]
+    0x00            //[calldata, calldatasize, 0]
+    keccak256       //[keccak256(0, calldatasize)]
+    0x00
+    mstore
+    0x20            //[keccak256(0, calldatasize), 20]
+    0x00            //[keccak256(0, calldatasize), 20, 0]
+    return
  }
