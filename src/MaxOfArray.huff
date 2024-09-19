@@ -10,6 +10,31 @@
 #define function maxOfArray(uint256[]) payable returns(uint256)
 
 #define macro MAX_OF_ARRAY() = takes(0) returns(0) {
+    0x04 calldataload 0x04 add //[array_length]
+    dup1 calldataload //[length, offset]  
+    0x00 // [max, length, offset]
+    0x00 // [index, max, length, offset]      
+    dup3 iszero err jumpi
+
+    loop:
+    dup1 dup4 eq ret jumpi   // [index, max, length, offset]  if length == index -> return
+    0x01 add                 // [index+1, max, length, offset]
+    dup1 0x20 mul            // [index*32 gets you the element, index+1, max, length, offset]   //UNDERSTAND WHAT IS THIS FACTOR
+    dup5 add calldataload    // [index*32 gets you the element, index+1, max, length, offset]
+    dup3 dup2 gt swapElement jumpi // If nextElement > currentElement, swap them
+    pop
+    loop jump
+
+    ret:
+    swap1 0x00 mstore  // [index, length, offset] store max in memory at offset 0
+    0x20 0x00 return
+
+    swapElement:
+    swap2 pop // [new_index, next_element, length, offset]        
+    loop jump
+
+    err:
+    0x00 0x00 revert
 
 }
 
@@ -20,7 +45,5 @@
     0x00 0x00 revert
 
     maxOfArray:
-        0x20 calldataload
-
-        dup1 0x00 mload
+    MAX_OF_ARRAY()
 }
