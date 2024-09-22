@@ -25,7 +25,7 @@
     0x00
     callvalue
     0x04 calldataload
-    0x20
+    0x5208   //21000 gas
     call
 } 
 
