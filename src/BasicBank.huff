@@ -10,7 +10,81 @@
 
 #define function balanceOf(address) payable returns(uint256)
 #define function withdraw(uint256) payable returns()
+//mapping(address => uint256) balances;
+
+
+//https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html
+
+//takes address, returns storage slot
+#define macro GET_MAPPING_SLOT() = takes(1) returns(1) {
+   //key is an address
+   //take storage slot, adds the hash of that and 
+   //mapping concatenates the key with the storage slot
+
+   //1-Mapping slot is 0
+   0x00 mstore
+
+   //2-Address is the key, it gets concatenated with the storage slot, since slot is 0, then just use the address (first argument)
+    0x20 0x00
+   sha3
+}
+
+#define macro SEND_ETHER() = takes(1) returns(0) {
+    0x00 0x00 0x00 0x00 // [argOffset, argSize, retOffset, retSize, value]
+    swap4 // [value, argOffset, argSize, retOffset, retSize]
+    caller 0x5208 // [gas, address, value, argOffset, argSize, retOffset, retSize]
+    call
+}
+
+#define macro BALANCE_OF() = takes(0) returns(0) {
+    0x04 calldataload
+    GET_MAPPING_SLOT()
+    sload
+    0x00
+    mstore  
+    0x20 0x00 return
+}
+
+#define macro WITHDRAW() = takes(0) returns(0) {
+    caller GET_MAPPING_SLOT() sload
+    //revert if there is an unferflow
+    0x04 calldataload 
+    dup2 dup2 gt rev jumpi
+
+    swap1 dup2 dup2 sub 
+    caller GET_MAPPING_SLOT() sstore 
+    pop
+    SEND_ETHER()
+    0x00 0x00 return
+    rev:    
+    0x00 0x00 revert
+}
+
+#define macro RECEIVE() = takes(0) returns(0) {
+    caller
+    GET_MAPPING_SLOT() dup1 //storage slot
+    sload
+    callvalue add //[sum, storage slot]
+    swap1        //[storage slot, sum]
+    sstore
+    0x00 0x00 return
+}
 
 #define macro MAIN() = takes(0) returns(0) {
 
+    0x00 calldataload 0xE0 shr   // [function_signature]
+
+   dup1 __FUNC_SIG(balanceOf) eq balanceOf jumpi //[function_signature] == balanceOf, jumpi clears the stack
+   dup1 __FUNC_SIG(withdraw) eq withdraw jumpi //[function_signature] == withdraw
+
+    receive jump
+
+    balanceOf:
+    BALANCE_OF()
+
+    withdraw:
+    WITHDRAW()
+
+    receive:
+    RECEIVE()
 }
