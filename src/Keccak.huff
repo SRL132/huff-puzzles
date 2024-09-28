@@ -23,10 +23,10 @@
     0x20 add // [new_offset, calldata_size]
     dup1 dup3 gt loop jumpi // if new_offset > calldata_size, jump to next instruction
 
-    pop returndatasize sha3
+    pop 0x00 sha3
 
-    returndatasize mstore
+    0x00 mstore
 
 
-  0x20 returndatasize return
+  0x20 0x00 return
  }
