@@ -13,7 +13,7 @@
 //        process_block(state, block)
  #define macro MAIN() = takes(0) returns(0) {
    // uint256 calldataSize = msg.data.length;
-  calldatasize returndatasize //[offset, calldata_size]
+  calldatasize 0x00 //[offset, calldata_size]
 
 
    //for loop to store the calldata in memory
