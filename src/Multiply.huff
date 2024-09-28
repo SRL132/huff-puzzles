@@ -26,9 +26,9 @@
     0x04 calldataload  //[arg_1]
     dup1 iszero zero jumpi // if arg_1 == 0, return 0
 
-    0x024 calldataload swap1
-    dup2 dup2 mul
-    dup1  0x00 mstore
+    0x024 calldataload swap1  //[arg_2, arg_1]
+    dup2 dup2 mul //[arg_1, arg_2, arg_1*arg_2]
+    dup1 0x00 mstore //[arg_1*arg_2]
     div eq ret jumpi
     0x00 0x00 revert
 

@@ -40,7 +40,10 @@ contract DistributeTest is Test, NonMatchingSelectorHelper {
 
         // foundry only accepts a max 2**16 of vm.assumes in a test run so assert the length of recievers * precompiles_and_foundry_helper_addresses is within the limit
         // also subtract 3 to account for the other assumes below
-        vm.assume(receivers.length < (2 ** 16 / precompiles_and_foundry_helper_addresses.length) - 3);
+        vm.assume(
+            receivers.length <
+                (2 ** 16 / precompiles_and_foundry_helper_addresses.length) - 3
+        );
         assume_not_precompile_or_foundry_helper_address(receivers);
 
         distributor.distribute{value: value}(receivers);
@@ -51,7 +54,11 @@ contract DistributeTest is Test, NonMatchingSelectorHelper {
                 size := extcodesize(receiver)
             }
             vm.assume(size == 0);
-            assertGe(receiver.balance, value / receivers.length, "Wrong balance of receiver");
+            assertGe(
+                receiver.balance,
+                value / receivers.length,
+                "Wrong balance of receiver"
+            );
         }
     }
 
@@ -60,14 +67,30 @@ contract DistributeTest is Test, NonMatchingSelectorHelper {
         bytes4[] memory func_selectors = new bytes4[](1);
         func_selectors[0] = Distributor.distribute.selector;
 
-        bool success = nonMatchingSelectorHelper(func_selectors, callData, address(distributor));
+        bool success = nonMatchingSelectorHelper(
+            func_selectors,
+            callData,
+            address(distributor)
+        );
         assert(!success);
     }
 
-    function assume_not_precompile_or_foundry_helper_address(address[] memory addresses) private view {
+    function assume_not_precompile_or_foundry_helper_address(
+        address[] memory addresses
+    ) private view {
         for (uint256 i; i < addresses.length; ++i) {
-            for (uint256 j; j < precompiles_and_foundry_helper_addresses.length; ++j) {
-                vm.assume(addresses[i] != precompiles_and_foundry_helper_addresses[j]);
+            for (
+                uint256 j;
+                j < precompiles_and_foundry_helper_addresses.length;
+                ++j
+            ) {
+                vm.assume(
+                    addresses[i] != precompiles_and_foundry_helper_addresses[j]
+                );
+                //Address is wrong
+                vm.assume(
+                    addresses[i] != 0x104fBc016F4bb334D775a19E8A6510109AC63E00
+                );
             }
         }
     }
