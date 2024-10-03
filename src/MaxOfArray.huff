@@ -8,20 +8,25 @@
  */
 
 #define function maxOfArray(uint256[]) payable returns(uint256)
-//REVISE
+ //0x1fe457d7                                                         - function signature
+//  0000000000000000000000000000000000000000000000000000000000000020 - offset of [1,2,3]
+//  0000000000000000000000000000000000000000000000000000000000000003 - count for [1,2,3]
+//  0000000000000000000000000000000000000000000000000000000000000001 - encoding of 1
+//  0000000000000000000000000000000000000000000000000000000000000002 - encoding of 2
+ // 0000000000000000000000000000000000000000000000000000000000000003 - encoding of 3
 #define macro MAX_OF_ARRAY() = takes(0) returns(0) {
-    0x04 calldataload 0x04 add //[array_length]
-    dup1 calldataload //[length, offset]  
-    0x00 // [max, length, offset]
-    0x00 // [index, max, length, offset]      
+    0x04 calldataload 0x04 add //[array_offset]
+    dup1 calldataload //[offset, length]  
+    0x00 // [max, offset, length]
+    0x00 // [index, max, offset, length]      
     dup3 iszero err jumpi
 
     loop:
-    dup1 dup4 eq ret jumpi   // [index, max, length, offset]  if length == index -> return
-    0x01 add                 // [index+1, max, length, offset]
-    dup1 0x20 mul            // [index*32 gets you the element, index+1, max, length, offset]   //UNDERSTAND WHAT IS THIS FACTOR
-    dup5 add calldataload    // [index*32 gets you the element, index+1, max, length, offset]
-    dup3 dup2 gt swapElement jumpi // If nextElement > currentElement, swap them
+    dup1 dup4 eq ret jumpi   // [index, max, offset, length]  if index == length -> return 
+    0x01 add                 // [index+1, max, offset, length]
+    dup1 0x20 mul            // [index*32 gets you the element pointer, index+1, max, offset, length]  
+    dup5 add calldataload    // [index*32 gets you the element pointer, index+1, max, offset, length]
+    dup3 dup2 gt swapElement jumpi // If nextElement > currentElement, swap them // [index, next_element, offset, length]
     pop
     loop jump
 
