@@ -91,6 +91,9 @@ contract DistributeTest is Test, NonMatchingSelectorHelper {
                 vm.assume(
                     addresses[i] != 0x104fBc016F4bb334D775a19E8A6510109AC63E00
                 );
+                vm.assume(
+                    addresses[i] != 0x5F65cD7D792E9746EF82929D60de9a1C526f93A5
+                );
             }
         }
     }

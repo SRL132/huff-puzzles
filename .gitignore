@@ -15,7 +15,7 @@ docs/
 
 solutions/
 src2/
-src/ottersec.huff
+src/Ottersec.huff
 test/Ottersec.t.sol
 
 .DS_Store

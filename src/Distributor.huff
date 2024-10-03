@@ -12,7 +12,7 @@
 
  #define function distribute(address[]) payable returns()
 
-//REVISE
+//REVISE 
  #define macro MAIN() = takes(0) returns(0) {  
     0x00 calldataload 0xe0 shr // [func_sig]
 
@@ -26,13 +26,13 @@
 #define macro SEND_ETHER() = takes(2) returns(0) {
     // input: [value, address]
 
-    returndatasize returndatasize returndatasize returndatasize // [argOffset, argSize, retOffset, retSize, value, address]
-    dup5 dup7 gas // [gas, address, value, argOffset, argSize, retOffset, retSize, value, address]
+    0x00 0x00 0x00 0x00 // [argOffset, argSize, retOffset, retSize, value, address]
+    dup5 dup7    gas   // [gas, address, value, argOffset, argSize, retOffset, retSize, value, address]
     call // [success, value, address]
     swap2 pop pop // [success]
 
     dup1 iszero fail jumpi // [success]
-    returndatasize lt success jumpi // []
+    0x00 lt success jumpi // []
     
     fail:
         0x00 0x00 revert
@@ -46,7 +46,7 @@
 
     dup1 iszero rev jumpi // [length, offset] // If array length is 0, revert
 
-    dup1 callvalue div returndatasize // [current_index=0, value_per_recipient, length, offset]
+    dup1 callvalue div 0x00 // [current_index=0, value_per_recipient, length, offset]
 
     loop:
         dup3 dup2 eq ret jumpi // [current_index, value_per_recipient, length, offset]

@@ -26,7 +26,7 @@ contract SimulateArrayTest is Test, NonMatchingSelectorHelper {
             HuffDeployer.config().deploy("SimulateArray")
         );
     }
-
+    //f0ef7470: != custom error f0ef7470:;  why is this failing?
     function testSimulateArray(uint256[] memory array) external {
         vm.expectRevert(bytes4(keccak256("ZeroArray()")));
         simulateArray.popp();
