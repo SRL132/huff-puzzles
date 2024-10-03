@@ -10,20 +10,24 @@
  */
 
  #define function makeContract() payable returns(address)
-
  #define macro MAKE_CONTRACT() = takes(0) returns (0){
     //https://www.evm.codes/playground?callValue=9&unit=Wei&codeType=Mnemonic&code=%27z0q0f9q9f0y4%20FFmslk3%200x63FFFFFFFF6000526004601CF3gvMSTORE~13~19gp%20%27~k%20z%2F%2F%20Createmnmccountjith%20yjeimnd%20v%5Cnqynolgg~pvCREATEm%20al%20codekvPUSH1j%20wg~0fpvvz%01fgjklmpqvyz~_
 
     //equivalent of: 
-//[00]	PUSH1	0a    //code: 600a
-//[02]	DUP1	          //code: 80
-//[03]	PUSH1	09        //code: 6009
-//[05]	PUSH0	          //code: 5f
-//[06]	CODECOPY	      //code: 39
-//[07]	PUSH0       	  //code: 5f
-//[08]	RETURN	          //code: f3
-//[09]	PUSH3	0caffe    //code: 620caffe
-//[0d]	PUSH0       	  //code: 5f
+
+    //DEPLOY CONTRACT
+//[00]	PUSH1	0a    //code: 600a      //[10]
+//[02]	DUP1	          //code: 80    //[10, 10]
+//[03]	PUSH1	09        //code: 6009  //[10, 10, 09]
+//[05]	PUSH0	          //code: 5f    //[10, 10, 09, 00]
+//[06]	CODECOPY	      //code: 39     //[codecopy(destOffset, offset, size)]  -->copy the code from 09 of the contract to position 0 of memory.
+//[07]	PUSH0       	  //code: 5f   //10]
+//[08]	RETURN	          //code: f3  //[return(offset, size)] -->return the code in memory from offset 0 size 10, since 
+
+//SAVE CAFE INTO MEMORY AND RETURN
+
+//[09]	PUSH3	0caffe    //code: 620caffe //[0xcaffe]
+//[0d]	PUSH0       	  //code: 5f   
 //[0e]	MSTORE	          //code: 52
 //[0f]	PUSH1	20        //code: 6020    
 //[11]	PUSH0       	  //code: 5f
@@ -31,8 +35,8 @@
 
     0x600a8060095f395ff3620caffe5f5260205ff3 0x00 mstore 
     
-    0x13 0x0d 0x00 // stack:[0x00, 0x0d (13 bytes), 0x13 (19 bytes)]
-    create
+    0x13 0x0d 0x00 // stack:[0x00, 0x0d (13 bytes), 0x13 (19 bytes length in bytes of 0x600a8060095f395ff3620caffe5f5260205ff3)]
+    create //[create(0x00, 0x0d, 0x13)] -->create(value in wei, offset, size)
 
     0x00 mstore // stack:[] store created contract's address in memory at offset zero
     0x20 0x00 return // return the address
