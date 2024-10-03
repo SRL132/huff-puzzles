@@ -10,81 +10,75 @@
 
 #define function balanceOf(address) payable returns(uint256)
 #define function withdraw(uint256) payable returns()
-//mapping(address => uint256) balances;
 
+#define macro MAIN() = takes(0) returns(0) {
 
-//https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html
+    returndatasize calldataload 0xe0 shr // [func_sig]
 
-//takes address, returns storage slot
-#define macro GET_MAPPING_SLOT() = takes(1) returns(1) {
-   //key is an address
-   //take storage slot, adds the hash of that and 
-   //mapping concatenates the key with the storage slot
+    dup1 __FUNC_SIG(balanceOf) eq balanceOfJump jumpi
+    dup1 __FUNC_SIG(withdraw) eq withdrawJump jumpi
 
-   //1-Mapping slot is 0
-   0x00 mstore
+    receiveJump jump
 
-   //2-Address is the key, it gets concatenated with the storage slot, since slot is 0, then just use the address (first argument)
-    0x20 0x00
-   sha3
+    balanceOfJump:
+        BALANCE_OF()
+    withdrawJump:
+        WITHDRAW()
+    receiveJump:
+        RECEIVE()
+
+    0x00 0x00 revert
+}
+
+#define macro GET_SLOT() = takes(1) returns(1) {
+    // input: [address]
+    // output:[storage_slot] i.e. balanceOf[address] storage slot
+
+    0x00 mstore // [] store caller in memory at offset zero
+    0x20 0x00 sha3 // [sha3(caller) i.e. storage_slot] 
 }
 
 #define macro SEND_ETHER() = takes(1) returns(0) {
-    0x00 0x00 0x00 0x00 // [argOffset, argSize, retOffset, retSize, value]
+    // input: [value]
+
+    returndatasize returndatasize returndatasize returndatasize // [argOffset, argSize, retOffset, retSize, value]
     swap4 // [value, argOffset, argSize, retOffset, retSize]
     caller 0x5208 // [gas, address, value, argOffset, argSize, retOffset, retSize]
     call
 }
 
 #define macro BALANCE_OF() = takes(0) returns(0) {
-    0x04 calldataload
-    GET_MAPPING_SLOT()
-    sload
-    0x00
-    mstore  
-    0x20 0x00 return
+    0x04 calldataload // [address]
+    GET_SLOT() // [storage_slot]
+    sload // [balance]
+
+    0x00 mstore // store balance in memory at offset 0
+    0x20 0x00 return // return balance
 }
 
 #define macro WITHDRAW() = takes(0) returns(0) {
-    caller GET_MAPPING_SLOT() sload
-    //revert if there is an unferflow
-    0x04 calldataload 
-    dup2 dup2 gt rev jumpi
+    caller GET_SLOT() sload // [balance]
+    0x04 calldataload // [withdraw_amt, balance]
+    dup2 dup2 gt ret jumpi // [withdraw_amt, balance] if withdraw_amt > balance, revert
 
-    swap1 dup2 dup2 sub 
-    caller GET_MAPPING_SLOT() sstore 
-    pop
-    SEND_ETHER()
+    swap1 dup2 dup2 sub // [remainder, balance, withdraw_amt]
+    caller GET_SLOT() sstore // [balance, withdraw_amt]
+
+    pop // [withdraw_amt]
+    SEND_ETHER() // Send withdraw_amt to caller
+
     0x00 0x00 return
-    rev:    
-    0x00 0x00 revert
+
+    ret:
+        0x00 0x00 revert
 }
 
 #define macro RECEIVE() = takes(0) returns(0) {
-    caller
-    GET_MAPPING_SLOT() dup1 //storage slot
-    sload
-    callvalue add //[sum, storage slot]
-    swap1        //[storage slot, sum]
-    sstore
+    caller // [caller]
+    GET_SLOT() dup1 // [storage_slot, storage_slot]
+    sload // [current_balance, storage_slot]
+    callvalue add // [updated_balance, storage_slot]
+    swap1 sstore // store balanceOf[msg.sender] = updated_balance
+
     0x00 0x00 return
-}
-
-#define macro MAIN() = takes(0) returns(0) {
-
-    0x00 calldataload 0xE0 shr   // [function_signature]
-
-   dup1 __FUNC_SIG(balanceOf) eq balanceOf jumpi //[function_signature] == balanceOf, jumpi clears the stack
-   dup1 __FUNC_SIG(withdraw) eq withdraw jumpi //[function_signature] == withdraw
-
-    receive jump
-
-    balanceOf:
-    BALANCE_OF()
-
-    withdraw:
-    WITHDRAW()
-
-    receive:
-    RECEIVE()
 }

@@ -11,7 +11,6 @@
 
 #define function multiply(uint256, uint256) payable returns(uint256)
 
-
 #define macro MAIN() = takes(0) returns(0) {
     0x00 calldataload
     0xE0 shr 
@@ -26,10 +25,10 @@
     0x04 calldataload  //[arg_1]
     dup1 iszero zero jumpi // if arg_1 == 0, return 0
 
-    0x024 calldataload swap1  //[arg_2, arg_1]
-    dup2 dup2 mul //[arg_1, arg_2, arg_1*arg_2]
-    dup1 0x00 mstore //[arg_1*arg_2]
-    div eq ret jumpi
+    0x024 calldataload swap1  //[arg1, arg_2 (0x024 is 36, get the second word after the selector, 32+4 bytes length of the selector)] -->we swap them to avoid a division by 0 later on
+    dup2 dup2 mul //[arg_1, arg_1*arg_2, arg_1, arg_2]
+    dup1 0x00 mstore //[arg_1*arg_2, arg_1, arg_2]
+    div eq ret jumpi   // if arg_1*arg_2 / arg_1 == arg_2, jump to return, otherwise revert in the next line
     0x00 0x00 revert
 
     zero:

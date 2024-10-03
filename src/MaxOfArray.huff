@@ -8,7 +8,7 @@
  */
 
 #define function maxOfArray(uint256[]) payable returns(uint256)
-
+//REVISE
 #define macro MAX_OF_ARRAY() = takes(0) returns(0) {
     0x04 calldataload 0x04 add //[array_length]
     dup1 calldataload //[length, offset]  

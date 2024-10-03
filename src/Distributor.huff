@@ -12,7 +12,7 @@
 
  #define function distribute(address[]) payable returns()
 
-
+//REVISE
  #define macro MAIN() = takes(0) returns(0) {  
     0x00 calldataload 0xe0 shr // [func_sig]
 
