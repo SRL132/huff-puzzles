@@ -13,24 +13,23 @@
 
 #define macro MAIN() = takes(0) returns(0) {
 
-    returndatasize calldataload 0xe0 shr // [func_sig]
+    0x00 calldataload 0xe0 shr // [func_sig]
 
-    dup1 __FUNC_SIG(balanceOf) eq balanceOfJump jumpi
-    dup1 __FUNC_SIG(withdraw) eq withdrawJump jumpi
+    dup1 __FUNC_SIG(balanceOf) eq balanceOf jumpi
+    dup1 __FUNC_SIG(withdraw) eq withdraw jumpi
+    receive jump
 
-    receiveJump jump
-
-    balanceOfJump:
+    balanceOf:
         BALANCE_OF()
-    withdrawJump:
+    withdraw:
         WITHDRAW()
-    receiveJump:
+    receive:
         RECEIVE()
 
     0x00 0x00 revert
 }
 
-#define macro GET_SLOT() = takes(1) returns(1) {
+#define macro GET_MAPPING_SLOT() = takes(1) returns(1) {
     // input: [address]
     // output:[storage_slot] i.e. balanceOf[address] storage slot
 
@@ -41,7 +40,7 @@
 #define macro SEND_ETHER() = takes(1) returns(0) {
     // input: [value]
 
-    returndatasize returndatasize returndatasize returndatasize // [argOffset, argSize, retOffset, retSize, value]
+    0x00 0x00 0x00 0x00 // [argOffset, argSize, retOffset, retSize, value]
     swap4 // [value, argOffset, argSize, retOffset, retSize]
     caller 0x5208 // [gas, address, value, argOffset, argSize, retOffset, retSize]
     call
@@ -49,7 +48,7 @@
 
 #define macro BALANCE_OF() = takes(0) returns(0) {
     0x04 calldataload // [address]
-    GET_SLOT() // [storage_slot]
+    GET_MAPPING_SLOT() // [storage_slot]
     sload // [balance]
 
     0x00 mstore // store balance in memory at offset 0
@@ -57,25 +56,25 @@
 }
 
 #define macro WITHDRAW() = takes(0) returns(0) {
-    caller GET_SLOT() sload // [balance]
-    0x04 calldataload // [withdraw_amt, balance]
-    dup2 dup2 gt ret jumpi // [withdraw_amt, balance] if withdraw_amt > balance, revert
+    caller GET_MAPPING_SLOT() sload // [balance]
+    0x04 calldataload // [amount, balance]
+    dup2 dup2 gt rev jumpi // [amount, balance] if amount > balance, revert
 
-    swap1 dup2 dup2 sub // [remainder, balance, withdraw_amt]
-    caller GET_SLOT() sstore // [balance, withdraw_amt]
+    swap1 dup2 dup2 sub // [remainder, balance, amount]
+    caller GET_MAPPING_SLOT() sstore // [balance, amount]
 
-    pop // [withdraw_amt]
-    SEND_ETHER() // Send withdraw_amt to caller
+    pop // [amount]
+    SEND_ETHER() // Send amount to caller
 
     0x00 0x00 return
 
-    ret:
+    rev:
         0x00 0x00 revert
 }
 
 #define macro RECEIVE() = takes(0) returns(0) {
     caller // [caller]
-    GET_SLOT() dup1 // [storage_slot, storage_slot]
+    GET_MAPPING_SLOT() dup1 // [storage_slot, storage_slot]
     sload // [current_balance, storage_slot]
     callvalue add // [updated_balance, storage_slot]
     swap1 sstore // store balanceOf[msg.sender] = updated_balance
