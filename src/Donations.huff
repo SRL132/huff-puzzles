@@ -14,10 +14,10 @@
 
 #define macro RECEIVE() = takes(0) returns(0) {
     caller
-    GET_MAPPING_SLOT() dup1
-    sload
-    callvalue add
-    swap1
+    GET_MAPPING_SLOT() dup1 //[slot, slot]
+    sload //[value, slot]
+    callvalue add //[value + msg.value, slot]
+    swap1 //[slot, value + msg.value]
     sstore
     0x00 0x00 return
 }
