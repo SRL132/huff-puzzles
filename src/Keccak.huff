@@ -21,9 +21,8 @@
     dup1 calldataload // [calldata_at_offset, offset, calldata_size]
     dup2 mstore // [offset, calldata_size]  -->store calldata in memory at offset
     0x20 add // [new_offset, calldata_size]
-    dup1 dup2 gt loop jumpi // if new_offset > calldata_size, jump to next instruction //[offset, calldata_size] Q why does this comparison not work?
+    dup1 dup3 gt loop jumpi //-->Q why dup3 instead of dup2?
 
-    //once everything is stored in memory, we can now hash the calldata
     pop 0x00 sha3
 
     0x00 mstore
