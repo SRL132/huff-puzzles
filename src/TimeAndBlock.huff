@@ -9,7 +9,6 @@
 
 #define function getTimeAndBlock() payable returns(uint256, uint256)
 
-//new
 #define macro MAIN() = takes(0) returns(0) {
        0x00 calldataload 0xE0 shr 
        __FUNC_SIG(getTimeAndBlock) eq gtAB jumpi
