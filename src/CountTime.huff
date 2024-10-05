@@ -8,11 +8,53 @@
  *
  *  NOTICE: The contract should revert when an unrecognized function is called
  */
-//new
+
 #define function getTimeElapsed(uint256) payable returns(uint256)
 #define function getTimeUntil(uint256) payable returns(uint256)
 
 
 #define macro MAIN() = takes(0) returns(0) {
+    0x00 calldataload 0xE0 shr 
+    __FUNC_SIG(getTimeElapsed) eq gtTE jumpi
+    __FUNC_SIG(getTimeUntil) eq gtTU jumpi
+    0x00 0x00 revert
+    gtTE:
+        GET_TIME_ELAPSED()
+    gtTU:
+        GET_TIME_UNTIL()
+}
 
+#define macro GET_TIME_ELAPSED() = takes(0) returns(0) {
+         0x04 calldataload   //[timestampArg]
+         timestamp       //[timestamp, timestampArg, timestampArg]
+         lt returnZero jumpi
+         timestamp           // Push the current block timestamp onto the stack again
+         0x04 calldataload   // Load the timestamp argument from calldata again
+         swap1                      //[timestampArg, timestampArg, timestamp - timestampArg]
+         sub
+         0x00
+         mstore
+         0x20 0x00 return
+
+        returnZero:
+         0x00
+         0x00 mstore
+         0x20 0x00 return
+}
+
+#define macro GET_TIME_UNTIL() = takes(0) returns(0) {
+    0x04 calldataload   // Load the timestamp argument from calldata
+    timestamp           // Push the current block timestamp onto the stack
+    gt returnZero jumpi // Compare the two timestamps; if the current timestamp is greater, jump to returnZero
+    0x04 calldataload   // Load the timestamp argument from calldata again
+    timestamp           // Push the current block timestamp onto the stack again
+    swap1               // Swap the top two elements on the stack
+    sub                 // Subtract the current block timestamp from the argument
+    0x00 mstore         // Store the result in memory at position 0
+    0x20 0x00 return    // Return 32 bytes from memory position 0
+
+    returnZero:
+    0x00                // Push 0 onto the stack
+    0x00 mstore         // Store 0 in memory at position 0
+    0x20 0x00 return    // Return 32 bytes from memory position 0
 }

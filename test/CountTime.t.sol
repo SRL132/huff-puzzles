@@ -22,7 +22,9 @@ contract CountTimeTest is Test, NonMatchingSelectorHelper {
         skip(skipBlocks);
 
         uint256 timeElapsed = countTime.getTimeElapsed(timestamp);
-        uint256 expectedTimeElapsed = (block.timestamp > timestamp ? block.timestamp - timestamp : 0);
+        uint256 expectedTimeElapsed = (
+            block.timestamp > timestamp ? block.timestamp - timestamp : 0
+        );
         assertEq(
             timeElapsed,
             expectedTimeElapsed,
@@ -35,7 +37,9 @@ contract CountTimeTest is Test, NonMatchingSelectorHelper {
         );
 
         uint256 timeUntil = countTime.getTimeUntil(timestamp);
-        uint256 expectedTimeUntil = (block.timestamp < timestamp ? timestamp - block.timestamp : 0);
+        uint256 expectedTimeUntil = (
+            block.timestamp < timestamp ? timestamp - block.timestamp : 0
+        );
         assertEq(
             timeUntil,
             expectedTimeUntil,
@@ -54,7 +58,11 @@ contract CountTimeTest is Test, NonMatchingSelectorHelper {
         func_selectors[0] = CountTime.getTimeElapsed.selector;
         func_selectors[1] = CountTime.getTimeUntil.selector;
 
-        bool success = nonMatchingSelectorHelper(func_selectors, callData, address(countTime));
+        bool success = nonMatchingSelectorHelper(
+            func_selectors,
+            callData,
+            address(countTime)
+        );
         assert(!success);
     }
 }
