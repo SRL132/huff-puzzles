@@ -26,11 +26,8 @@
 
 #define macro GET_TIME_ELAPSED() = takes(0) returns(0) {
          0x04 calldataload   //[timestampArg]
-         timestamp       //[timestamp, timestampArg, timestampArg]
+         timestamp dup2 dup2    //[timestamp, timestampArg, timestampArg]
          lt returnZero jumpi
-         timestamp           // Push the current block timestamp onto the stack again
-         0x04 calldataload   // Load the timestamp argument from calldata again
-         swap1                      //[timestampArg, timestampArg, timestamp - timestampArg]
          sub
          0x00
          mstore
@@ -44,10 +41,8 @@
 
 #define macro GET_TIME_UNTIL() = takes(0) returns(0) {
     0x04 calldataload   // Load the timestamp argument from calldata
-    timestamp           // Push the current block timestamp onto the stack
+    timestamp dup2 dup2        // Push the current block timestamp onto the stack
     gt returnZero jumpi // Compare the two timestamps; if the current timestamp is greater, jump to returnZero
-    0x04 calldataload   // Load the timestamp argument from calldata again
-    timestamp           // Push the current block timestamp onto the stack again
     swap1               // Swap the top two elements on the stack
     sub                 // Subtract the current block timestamp from the argument
     0x00 mstore         // Store the result in memory at position 0
